@@ -1,0 +1,2 @@
+(1) helper.c, lines #345 and #350 - The pArray makes sense if ncl and nrl are 0. What is the point of the pArray when ncl and nrl are > 0? For example, when they are 2?
+Note: I suggest we use ncl = nrl = 0 when allocating memory for all our data, atleast for this project.
