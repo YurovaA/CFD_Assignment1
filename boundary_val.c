@@ -32,7 +32,7 @@ void boundaryvalues(
 
     /* Top (Moving) Wall */
     for (i = 0; i <= imax + 1; i++){
-        U[jmax_plus_one*imax_plus_two + i] = 2.0 - U[jmax*imax_plus_two + i];
+        U[jmax_plus_one*imax_plus_two + i] = 2.0 - U[jmax*imax_plus_two + i];   /// Corresponding to U_top = 1
         V[jmax*imax_plus_two + i] = 0;  /// Possibly redundant - always remains zero. Can be removed?
     }
 }
