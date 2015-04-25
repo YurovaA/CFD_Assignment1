@@ -3,6 +3,54 @@
 #include "init.h"
 #include <stdio.h>
 
+int parseCommandLine(int argn, char** args, char** inputFile)
+{
+    if ( argn < 2 ) // no arguments given, print usage statement
+    {
+        printf( "usage: %s filename", args[0] );
+        return 0;
+    }
+    else 
+    {
+        *inputFile = args[1]; // TODO: don't assume argv[1] always contains a filename since we may have other options in the future...
+    }
+    
+    return 1;
+}
+
+void output_uvp(double **U, double **V, double **P, int imax, int jmax)
+{
+  printf("\n  U Contains:\n---------------\n");
+  for (int i = 0; i < imax; i++)
+  {
+    printf("[");
+    for (int j = 0; j < jmax; j++)
+    {
+        printf(" %f ", U[i][j]);
+    }
+    printf("]\n");
+  }
+  printf("\n  V Contains:\n---------------\n");
+  for (int i = 0; i < imax; i++)
+  {
+    printf("[");
+    for (int j = 0; j < jmax; j++)
+    {
+        printf(" %f ", V[i][j]);
+    }
+    printf("]\n");
+  }
+  printf("\n  P Contains:\n---------------\n");
+  for (int i = 0; i < imax; i++)
+  {
+    printf("[");
+    for (int j = 0; j < jmax; j++)
+    {
+        printf(" %f ", P[i][j]);
+    }
+    printf("]\n");
+  }
+}
 
 /**
  * The main operation reads the configuration file, initializes the scenario and
@@ -38,48 +86,64 @@
  * - calculate_uv() Calculate the velocity at the next time step.
  */
 int main(int argn, char** args){
-  int xSize = 3;
-  int ySize = 4;
-  double **U = matrix(0, xSize, 0, ySize);
-  double **V = matrix(0, xSize, 0, ySize);
-  double **P = matrix(0, xSize, 0, ySize);
+  char *inputFile; // file name to read configuration parameters from
+  
+  // initial parameters given by inputFile
+  double Re;
+  double UI;
+  double VI;
+  double PI;
+  double GX;
+  double GY;
+  double t_end;
+  double xlength;
+  double ylength;
+  double dt;
+  double dx;
+  double dy;
+  int imax;
+  int jmax;
+  double alpha;
+  double omg;
+  double tau;
+  int itermax;
+  double eps;
+  double dt_value;
+  
+  // U,V,P arrays
+  double **U;
+  double **V;
+  double **P;
+  
+  if (!parseCommandLine(argn, args, &inputFile))
+  {
+    return -1; // exit if no arguments were given
+  }
+  else
+  {
+    read_parameters(inputFile, &Re, &UI, &VI, &PI, &GX, &GY, &t_end, &xlength,
+                    &ylength, &dt, &dx, &dy, &imax, &jmax, &alpha, &omg, &tau,
+                    &itermax, &eps, &dt_value);
+  }
 
-  double U_default = 1.0;
-  double V_default = 2.0;
-  double P_default = 3.0;
-  printf("Running init_uvp with test values: %f, %f, %f\n", U_default, V_default, P_default);
-  init_uvp(1, 2, 3, xSize, ySize, U, V, P);
+  // allocate space for U,V,P
+  U = matrix(0, imax, 0, jmax);
+  V = matrix(0, imax, 0, jmax);
+  P = matrix(0, imax, 0, jmax);
 
-  printf("\n  U Contains:\n---------------\n");
-  for (int i = 0; i < ySize; i++)
-  {
-    printf("[");
-    for (int j = 0; j < xSize; j++)
-    {
-        printf(" %f ", U[i][j]);
-    }
-    printf("]\n");
-  }
-  printf("\n  V Contains:\n---------------\n");
-  for (int i = 0; i < ySize; i++)
-  {
-    printf("[");
-    for (int j = 0; j < xSize; j++)
-    {
-        printf(" %f ", V[i][j]);
-    }
-    printf("]\n");
-  }
-  printf("\n  P Contains:\n---------------\n");
-  for (int i = 0; i < ySize; i++)
-  {
-    printf("[");
-    for (int j = 0; j < xSize; j++)
-    {
-        printf(" %f ", P[i][j]);
-    }
-    printf("]\n");
-  }
+  // inititialize U,V,P
+  init_uvp(UI, VI, PI, imax, jmax, U, V, P);
+  
+
+  // ------------------- //
+  // main loop goes here //
+  // ------------------- //
+  
+  // free memory
+  free_matrix(U, 0, imax, 0, jmax);
+  free_matrix(V, 0, imax, 0, jmax);
+  free_matrix(P, 0, imax, 0, jmax);
+
 
   printf("\nDone!\n");
   return -1;
