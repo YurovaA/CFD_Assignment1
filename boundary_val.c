@@ -1,4 +1,4 @@
-#include <boundary_val.h>
+#include "boundary_val.h"
 
 void boundaryvalues(
   int imax,
@@ -9,7 +9,7 @@ void boundaryvalues(
     int i, j;
     int imax_plus_two = imax + 2;
     int imax_plus_one = imax + 1;
-    int jmax_plus_two = jmax + 2;
+    //int jmax_plus_two = jmax + 2; // is this needed?
     int jmax_plus_one = jmax + 1;
 
     /* Left Wall */
@@ -26,13 +26,13 @@ void boundaryvalues(
 
     /* Bottom Wall */
     for (i = 0; i <= imax + 1; i++){
-        U[i] = -U[imax_plus_one+i];
-        V[i] = 0;                       /// Possibly redundant - always remains zero. Can be removed?
+        *U[i] = -*U[imax_plus_one+i];
+        *V[i] = 0;                       /// Possibly redundant - always remains zero. Can be removed?
     }
 
     /* Top (Moving) Wall */
     for (i = 0; i <= imax + 1; i++){
-        U[jmax_plus_one*imax_plus_two + i] = 2.0 - U[jmax*imax_plus_two + i];   /// Corresponding to U_top = 1
-        V[jmax*imax_plus_two + i] = 0;  /// Possibly redundant - always remains zero. Can be removed?
+        *U[jmax_plus_one*imax_plus_two + i] = 2.0 - *U[jmax*imax_plus_two + i];   /// Corresponding to U_top = 1
+        *V[jmax*imax_plus_two + i] = 0;  /// Possibly redundant - always remains zero. Can be removed?
     }
 }
