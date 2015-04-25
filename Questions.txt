@@ -14,5 +14,23 @@ Saumi:
 
     - The use of pMatrix makes sense. But the purpose of pArray still remains ambiguous in case ncl and nrl are >= 2.
     - So, to confirm, we're sticking with ONE matrix per variable? (i.e., ncl = 0, nrl = 0, nch = imax+1, nrh = jmax+1)
+    
+Tamas:
+    - pArray ends up containing a list of references to locations in pMatrix. Its purpose is just to index into pMatrix.
+      Because they're allocated separately, the loop on line 350 goes through pArray to set up the references to pMatrix. 
+      What they're doing here should be equivalent to allocating each column separately in a loop, but allocating the 
+      whole thing in one block can be more efficient.
+    - Yes, each variable should be stored in its own matrix.
+    - The choice of ncl or nrl > 0 is not required for anything, it's just provided as a convenience. If you create a matrix
+      with ncl = nrl = 0, and nch = nrh = 5, then your indices will run from A[0][0] to A[4][4], but if you create a matrix 
+      with ncl = nrl = 5, and nch = nrh = 10, then your indices will run from A[5][5] to A[10][10], and referencing A[0][0]
+      would be invalid.
+      For U,V,P there's no reason to do this, but if you wanted to, for example, keep track of a small matrix of values which
+      corresponded to a specific rectangular region in P, you could create a matrix which uses the same indices as the locations
+      in P that you're comparing it to, which looks a little nicer:
+         P[120][87] >= Other[120][87]
+                    VS.
+         P[120][87] >= Other[120 - i_offset][87 - j_offset]
+        (where i_offset & j_offset would be smallest index of P that you compare against the Other matrix)
 ________________________________________
 
