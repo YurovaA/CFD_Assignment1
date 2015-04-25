@@ -1,6 +1,9 @@
 #include "helper.h"
 #include "visual.h"
 #include "init.h"
+#include "uvp.h"
+#include "sor.h"
+#include "boundary_val.h"
 #include <stdio.h>
 
 int parseCommandLine(int argn, char** args, char** inputFile)
@@ -10,7 +13,7 @@ int parseCommandLine(int argn, char** args, char** inputFile)
         printf( "usage: %s filename", args[0] );
         return 0;
     }
-    else 
+    else
     {
         *inputFile = args[1]; // TODO: don't assume argv[1] always contains a filename since we may have other options in the future...
     }
@@ -87,7 +90,7 @@ void output_uvp(double **U, double **V, double **P, int imax, int jmax)
  */
 int main(int argn, char** args){
   char *inputFile; // file name to read configuration parameters from
-  
+
   // initial parameters given by inputFile
   double Re;
   double UI;
@@ -109,12 +112,18 @@ int main(int argn, char** args){
   int itermax;
   double eps;
   double dt_value;
-  
-  // U,V,P arrays
-  double **U;
-  double **V;
-  double **P;
-  
+
+  // Data about the flow
+  double **U; // speed in x-dir
+  double **V; // speed in y-dir
+  double **P; // pressure
+  double **F; // Fn
+  double **G; // Gn
+  double ** RS; // right-hand side of pressure equation
+
+  // current time
+  double t = 0.0;
+
   if (!parseCommandLine(argn, args, &inputFile))
   {
     return -1; // exit if no arguments were given
@@ -126,23 +135,58 @@ int main(int argn, char** args){
                     &itermax, &eps, &dt_value);
   }
 
-  // allocate space for U,V,P
-  U = matrix(0, imax, 0, jmax);
-  V = matrix(0, imax, 0, jmax);
-  P = matrix(0, imax, 0, jmax);
+  // allocate space for U,V,P, F,G, RS
+  U  = matrix(0, imax+1, 0, jmax+1);
+  V  = matrix(0, imax+1, 0, jmax+1);
+  P  = matrix(0, imax+1, 0, jmax+1);
+  F  = matrix(0, imax+1, 0, jmax+1);
+  G  = matrix(0, imax+1, 0, jmax+1);
+  RS = matrix(0, imax+1, 0, jmax+1);
 
   // inititialize U,V,P
   init_uvp(UI, VI, PI, imax, jmax, U, V, P);
   
 
-  // ------------------- //
-  // main loop goes here //
-  // ------------------- //
+  // -------------------- //
+  // main simulation loop //
+  // -------------------- //
+
+  while (t < t_end)
+  {
+    calculate_dt(Re,tau,&dt,dx,dy,imax,jmax,U,V); // get new timestep, dt
+    boundaryvalues(imax,jmax,U,V);                // set boundary values in U & V for this timestep
+    calculate_fg(Re,GX,GY,alpha,dt,dx,dy,imax,jmax,U,V,F,G);  // compute Fn & Gn
+    calculate_rs(dt,dx,dy,imax,jmax,F,G,RS);      // compute right-hand side of pressure equation
+
+    int it = 0;
+    double res = 1.0; /// should this initial value depend on eps?
+    while (it < itermax && res > eps)
+    {
+      sor(omg, dx, dy, imax, jmax, P, RS, &res);  // perform SOR
+      it += 1;
+    }
+
+    calculate_uv(dt,dx,dy,imax,jmax,U,V,F,G,P);   // compute new velocities
+
+    // ------------------------------------------------- //
+    /* output U,V,P for current timestep here, if needed */
+    // ------------------------------------------------- //
+
+    t += dt;
+  }
+
   
+  // ----------------------- //
+  /* output final U,V,P here */
+  // ----------------------- //
+
   // free memory
-  free_matrix(U, 0, imax, 0, jmax);
-  free_matrix(V, 0, imax, 0, jmax);
-  free_matrix(P, 0, imax, 0, jmax);
+  free_matrix(U, 0, imax+1, 0, jmax+1);
+  free_matrix(V, 0, imax+1, 0, jmax+1);
+  free_matrix(P, 0, imax+1, 0, jmax+1);
+  free_matrix(F, 0, imax+1, 0, jmax+1);
+  free_matrix(G, 0, imax+1, 0, jmax+1);
+  free_matrix(RS, 0, imax+1, 0, jmax+1);
 
 
   printf("\nDone!\n");
