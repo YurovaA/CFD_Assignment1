@@ -1,7 +1,18 @@
+Saumi:
+
 (1) helper.c, lines #345 and #350 - The pArray makes sense if ncl and nrl are 0. What is the point of the pArray when ncl and nrl are > 0? For example, when they are 2?
 Note: I suggest we use ncl = nrl = 0 when allocating memory for all our data, atleast for this project.
+
+Tamas:
 
     - The coordinate [ncl,nrl] refers to the top-left corner of the matrix (smallest point), while [nch,nrh] refers to the bottom-right corner.
       If you create a matrix with ncl = nrl = 2, and nch = nrh = 4, then you will get a 2x2 matrix, but if ncl = nrl = 0 you get a 4x4 matrix.
       I imagine the idea is that if you wanted to save a copy of just a small region of a grid this would let you specify just the existing grid
       indices for the region you want to capture without computing the actual size yourself, which could be a little more convenient.
+
+Saumi:
+
+    - The use of pMatrix makes sense. But the purpose of pArray still remains ambiguous in case ncl and nrl are >= 2.
+    - So, to confirm, we're sticking with ONE matrix per variable? (i.e., ncl = 0, nrl = 0, nch = imax+1, nrh = jmax+1)
+________________________________________
+
