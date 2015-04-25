@@ -38,5 +38,49 @@
  * - calculate_uv() Calculate the velocity at the next time step.
  */
 int main(int argn, char** args){
+  int xSize = 3;
+  int ySize = 4;
+  double **U = matrix(0, xSize, 0, ySize);
+  double **V = matrix(0, xSize, 0, ySize);
+  double **P = matrix(0, xSize, 0, ySize);
+
+  double U_default = 1.0;
+  double V_default = 2.0;
+  double P_default = 3.0;
+  printf("Running init_uvp with test values: %f, %f, %f\n", U_default, V_default, P_default);
+  init_uvp(1, 2, 3, xSize, ySize, U, V, P);
+
+  printf("\n  U Contains:\n---------------\n");
+  for (int i = 0; i < ySize; i++)
+  {
+    printf("[");
+    for (int j = 0; j < xSize; j++)
+    {
+        printf(" %f ", U[i][j]);
+    }
+    printf("]\n");
+  }
+  printf("\n  V Contains:\n---------------\n");
+  for (int i = 0; i < ySize; i++)
+  {
+    printf("[");
+    for (int j = 0; j < xSize; j++)
+    {
+        printf(" %f ", V[i][j]);
+    }
+    printf("]\n");
+  }
+  printf("\n  P Contains:\n---------------\n");
+  for (int i = 0; i < ySize; i++)
+  {
+    printf("[");
+    for (int j = 0; j < xSize; j++)
+    {
+        printf(" %f ", P[i][j]);
+    }
+    printf("]\n");
+  }
+
+  printf("\nDone!\n");
   return -1;
 }

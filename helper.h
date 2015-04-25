@@ -479,7 +479,7 @@ int **read_pgm(const char *filename);
  */
 #define DUMP_MATRIX_TO_FILE( m, nrl, nrh, ncl, nch, xlength, ylength) \
         {  \
-           static nCount = 0; \
+           static int nCount = 0; \
 	   char szFileName[100];  \
 	   sprintf( szFileName, "%s__%d__%s.out", __FILE__, __LINE__, #m); \
            write_matrix( szFileName, m, nrl, nrh, ncl, nch, xlength, ylength, nCount == 0); \
