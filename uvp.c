@@ -1,6 +1,10 @@
 /**
  * Determines the value of U and G according to the formula
  */
+
+#include "helper.h"
+#include "math.h"
+
 void calculate_fg(
   double Re,
   double GX,
