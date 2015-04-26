@@ -35,7 +35,16 @@ void calculate_rs(
   double **RS
 )
 {
-    return;
+    // start loops at 1 since the 0th entries correspond to boundary values outside the domain
+    // NOTE: We don't need to set the 0th entries of any row/column because SOR also skips them
+    for (int i = 1; i < imax; i++)
+    {
+        for (int j = 1; j < jmax; j++)
+        {
+            RS[i][j] = (1/dt) * ( ((F[i][j] - F[i-1][j]) / dx) 
+                                + ((G[i][j] - G[i][j-1]) / dy) );
+        }
+    }
 }
 
 
