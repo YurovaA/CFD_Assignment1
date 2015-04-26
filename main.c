@@ -5,19 +5,82 @@
 #include "sor.h"
 #include "boundary_val.h"
 #include <stdio.h>
+#include <unistd.h>
 
-int parseCommandLine(int argn, char** args, char** inputFile)
+int parseCommandLine(int argn, char** args, char** inputFile, char** outputLocation, int* outputAllFrames)
 {
-    if ( argn < 2 ) // no arguments given, print usage statement
+    char* usage = "-f inputFile [-o outputDir] [-a]\n     -a will cause a .vtk file to be produced for every timestep\n     If no output directory is specified, the current directory will be used by default";
+    char* outputDir;
+    int opt;
+    int setOutput = 0;
+    int setInput = 0;
+
+    if (argn > 2)
     {
-        printf( "usage: %s filename", args[0] );
+        while ((opt = getopt(argn, args, "f:o:a")) != -1)
+        {
+            switch (opt)
+            {
+                case 'f': // input filename
+                    printf("found input file: %s\n", optarg);
+                    *inputFile = optarg;
+                    setInput = 1;
+                    break;
+                case 'o': // output filename
+                    outputDir = optarg;
+                    setOutput = 1;
+                    break;
+                case 'a': // output VTK file for every timestep
+                    *outputAllFrames = 1;
+                    break;
+                case '?':
+                    switch (optopt)
+                    {
+                        case 'f':
+                        case 'o':
+                            fprintf(stderr, "Option -%c requires a filename.\n", optopt);
+                            break;
+                        default:
+                            fprintf (stderr, "Unknown option `-%c'.\n", optopt);
+                            break;
+                    }
+                    return 0;
+                default:  // unexpected option
+                    printf("ERROR: Unexpected option \'%x\'\n", opt);
+                    return 0;
+                    break;
+            }
+        }
+    }
+    else if (argn == 2 && args[1][0] != '-') // assume only input file was given
+    {
+        *inputFile = args[1];
+        setInput = 1;
+    }
+    else    // insufficient options given
+    {
+        printf( "usage: %s %s", args[0], usage );
         return 0;
+    }
+
+    if (!setInput)
+    {
+        fprintf(stderr, "You must provide an input file!\n");
+        return 0;
+    }
+
+    // configure output location
+    if (!setOutput)
+    {
+        *outputLocation = *inputFile;
     }
     else
     {
-        *inputFile = args[1]; // TODO: don't assume argv[1] always contains a filename since we may have other options in the future...
+        asprintf(outputLocation, "%s/%s", outputDir, *inputFile);
     }
-    
+
+    printf("Input File: %s\nOutput Results To: %s.*.vtk\nOutput Result Every Step: %s\n\n",
+                        *inputFile, *outputLocation, *outputAllFrames ? "YES" : "NO");
     return 1;
 }
 
@@ -90,6 +153,8 @@ void output_uvp(double **U, double **V, double **P, int imax, int jmax)
  */
 int main(int argn, char** args){
   char *inputFile; // file name to read configuration parameters from
+  char *outputLocation; // where to store the results
+  int outputAllSteps = 0; // if nonzero, we will generate VTKs for ALL timesteps, not jsut the last one
 
   // initial parameters given by inputFile
   double Re;
@@ -124,7 +189,7 @@ int main(int argn, char** args){
   // current time
   double t = 0.0;
 
-  if (!parseCommandLine(argn, args, &inputFile))
+  if (!parseCommandLine(argn, args, &inputFile, &outputLocation, &outputAllSteps))
   {
     return -1; // exit if no arguments were given
   }
@@ -150,7 +215,7 @@ int main(int argn, char** args){
   // -------------------- //
   // main simulation loop //
   // -------------------- //
-
+  int n = 0;
   while (t < t_end)
   {
     calculate_dt(Re,tau,&dt,dx,dy,imax,jmax,U,V); // get new timestep, dt
@@ -171,14 +236,20 @@ int main(int argn, char** args){
     // ------------------------------------------------- //
     /* output U,V,P for current timestep here, if needed */
     // ------------------------------------------------- //
+    if (outputAllSteps)
+    {
+        write_vtkFile(outputLocation, n, xlength, ylength, imax, jmax, dx, dy, U, V, P);
+    }
 
     t += dt;
+    n++;
   }
 
   
   // ----------------------- //
   /* output final U,V,P here */
   // ----------------------- //
+  write_vtkFile(outputLocation, n, xlength, ylength, imax, jmax, dx, dy, U, V, P);
 
   // free memory
   free_matrix(U, 0, imax+1, 0, jmax+1);
