@@ -36,3 +36,6 @@ ________________________________________
 
 (2) Does anyone know what the variable 'n' is for in the algorithm outline on page 10 of the worksheet? I don't see it
     being used for anything, except perhaps just as a counter of how many iterations were performed to simulate up to t_end.
+
+Saumi:
+	Yep, that's what it looks like.
