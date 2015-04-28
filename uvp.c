@@ -56,8 +56,11 @@ void calculate_fg(
 			duvdy[i][j] += alpha/dy*(fabs(V[i][j]+V[i+1][j])*(U[i][j] - U[i][j+1]) - fabs(V[i][j-1]+V[i+1][j-1])*(U[i][j-1] - U[i][j]))/4;
 		};
 	};
-	F[i][j] = U[i][j] + dt*(1/Re*(d2udx2[i][j] + d2udy2[i][j])-du2dx[i][j] - duvdy[i][j] + GX);
-
+	for (i = 1; i<imax-1; i++){
+		for (j = 1; j<jmax; j++){
+			F[i][j] = U[i][j] + dt*(1/Re*(d2udx2[i][j] + d2udy2[i][j])-du2dx[i][j] - duvdy[i][j] + GX);
+		};
+	};
 	double** d2vdx2;
 	double** d2vdy2;
 	double** dv2dy;
@@ -92,8 +95,12 @@ void calculate_fg(
 			duvdx[i][j] += alpha/dy*(fabs(U[i][j]+U[i][j+1])*(V[i][j] - V[i+1][j]) - fabs(U[i-1][j]+U[i-1][j+1])*(V[i-1][j] - V[i][j]))/4;
 		};
 	};
-	G[i][j] = V[i][j] + dt*(1/Re*(d2vdx2[i][j] + d2vdy2[i][j])-dv2dy[i][j] - duvdx[i][j] + GY);
-    return;
+	for (i = 1; i<imax; i++){
+		for (j = 1; j<jmax-1; j++){
+			G[i][j] = V[i][j] + dt*(1/Re*(d2vdx2[i][j] + d2vdy2[i][j])-dv2dy[i][j] - duvdx[i][j] + GY);
+		};
+	};
+	return;
 }
 
 
