@@ -20,9 +20,9 @@ void boundaryvalues(
         V[imax_plus_one][j] = -V[imax][j];
     }
 
-    for (i = 0; i <= imax + 1; i++){
+    for (i = 0; i <= imax_plus_one; i++){
         /* Bottom Wall */
-        U[i][0] = -U[i+1][0];
+        U[i][0] = -U[i][0];
         V[i][0] = 0;        /// Possibly redundant - always remains zero. Can be removed?
 
         /* Top (Moving) Wall */
