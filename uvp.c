@@ -165,10 +165,10 @@ void calculate_uv(
 	}
 	}
 	for (i = 1; i<imax; i++){
-				for (j = 1; j<jmax-1; j++){
-					V[i][j] = G[i][j] - dt/dy*(P[i][j+1] - P[i][j]);
+			for (j = 1; j<jmax-1; j++){
+				V[i][j] = G[i][j] - dt/dy*(P[i][j+1] - P[i][j]);
 		}
-		}
+	}
 
 
 
