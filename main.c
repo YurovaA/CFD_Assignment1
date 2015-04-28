@@ -211,7 +211,7 @@ int main(int argn, char** args){
   // inititialize U,V,P
   init_uvp(UI, VI, PI, imax, jmax, U, V, P);
   
-
+  
   // -------------------- //
   // main simulation loop //
   // -------------------- //
