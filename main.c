@@ -6,6 +6,7 @@
 #include "boundary_val.h"
 #include <stdio.h>
 #include <unistd.h>
+#include <getopt.h>
 
 int parseCommandLine(int argn, char** args, char** inputFile, char** outputLocation, int* outputAllFrames)
 {
@@ -260,6 +261,6 @@ int main(int argn, char** args){
   free_matrix(RS, 0, imax+1, 0, jmax+1);
 
 
-  printf("\nDone!\n");
+  printf("\nDone!\n  Total Iterations: %d\n", n);
   return -1;
 }
