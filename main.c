@@ -4,6 +4,7 @@
 #include "uvp.h"
 #include "sor.h"
 #include "boundary_val.h"
+#define _GNU_SOURCE 
 #include <stdio.h>
 #include <unistd.h>
 #include <getopt.h>
