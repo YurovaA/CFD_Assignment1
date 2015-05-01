@@ -1,5 +1,5 @@
 CC = gcc
-CFLAGS = -Wall -pedantic -Werror -g -std=c99
+CFLAGS = -Wall -pedantic -Werror -g -D_GNU_SOURCE=1 -std=c99
 .c.o:  ; $(CC) -c $(CFLAGS) $<
 
 OBJ = 	helper.o\
