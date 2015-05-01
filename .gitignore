@@ -1,4 +1,9 @@
 *.out
+*.dat
 *.o
 *.vtk
+*.cproject
+*.metadata
+*.project
+*~
 sim*
