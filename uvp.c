@@ -52,7 +52,7 @@ void calculate_fg(
 	};
 	for (i = 1; i<=imax-1; i++){
 		for (j = 1; j<=jmax; j++){
-			duvdy[i][j] = 0.25*((V[i][j] + V[i+1][j])*(U[i][j] + V[i][j+1])-(V[i][j-1] + V[i+1][j-1])*(U[i][j-1] + U[i][j]))/dy;
+			duvdy[i][j] = 0.25*((V[i][j] + V[i+1][j])*(U[i][j] + U[i][j+1])-(V[i][j-1] + V[i+1][j-1])*(U[i][j-1] + U[i][j]))/dy;
 			duvdy[i][j] += (alpha/dy)*(fabs(V[i][j]+V[i+1][j])*(U[i][j] - U[i][j+1]) - fabs(V[i][j-1]+V[i+1][j-1])*(U[i][j-1] - U[i][j]))/4;
 		};
 	};
