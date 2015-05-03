@@ -4,12 +4,11 @@
 #include "uvp.h"
 #include "sor.h"
 #include "boundary_val.h"
-#define _GNU_SOURCE 
 #include <stdio.h>
 #include <unistd.h>
 #include <getopt.h>
 
-int parseCommandLine(int argn, char** args, char** inputFile, char** outputLocation, int* outputAllFrames)
+int parseCommandLine(int argn, char** args, char** inputFile, char** outputLocation, int* outputAllFrames, int* outputBoundary)
 {
     char* usage = "-f inputFile [-o outputDir] [-a]\n     -a will cause a .vtk file to be produced for every timestep\n     If no output directory is specified, the current directory will be used by default";
     char* outputDir;
@@ -19,12 +18,11 @@ int parseCommandLine(int argn, char** args, char** inputFile, char** outputLocat
 
     if (argn > 2)
     {
-        while ((opt = getopt(argn, args, "f:o:a")) != -1)
+        while ((opt = getopt(argn, args, "f:o:ab")) != -1)
         {
             switch (opt)
             {
                 case 'f': // input filename
-                    printf("found input file: %s\n", optarg);
                     *inputFile = optarg;
                     setInput = 1;
                     break;
@@ -34,6 +32,9 @@ int parseCommandLine(int argn, char** args, char** inputFile, char** outputLocat
                     break;
                 case 'a': // output VTK file for every timestep
                     *outputAllFrames = 1;
+                    break;
+                case 'b': // include boundary layer in output
+                    *outputBoundary = 1;
                     break;
                 case '?':
                     switch (optopt)
@@ -81,43 +82,22 @@ int parseCommandLine(int argn, char** args, char** inputFile, char** outputLocat
         asprintf(outputLocation, "%s/%s", outputDir, *inputFile);
     }
 
-    printf("Input File: %s\nOutput Results To: %s.*.vtk\nOutput Result Every Step: %s\n\n",
-                        *inputFile, *outputLocation, *outputAllFrames ? "YES" : "NO");
+    printf("Input File: %s\nOutput Results To: %s.*.vtk\nOutput Result Every Step: %s\nInclude Boundaries in output: %s\n\n",
+                        *inputFile, *outputLocation, *outputAllFrames ? "YES" : "NO",
+                        *outputBoundary ? "YES" : "NO");
     return 1;
 }
 
-void output_uvp(double **U, double **V, double **P, int imax, int jmax)
+void output_uvp(char *outputLocation, int n, double xlength, double ylength, int imax, int jmax, double dx, double dy, double **U, double **V, double **P, int includeBoundary)
 {
-  printf("\n  U Contains:\n---------------\n");
-  for (int i = 0; i < imax; i++)
-  {
-    printf("[");
-    for (int j = 0; j < jmax; j++)
+    if (includeBoundary)
     {
-        printf(" %f ", U[i][j]);
+        write_vtkFile(outputLocation, n, xlength, ylength, imax, jmax, dx, dy, U, V, P);
     }
-    printf("]\n");
-  }
-  printf("\n  V Contains:\n---------------\n");
-  for (int i = 0; i < imax; i++)
-  {
-    printf("[");
-    for (int j = 0; j < jmax; j++)
+    else
     {
-        printf(" %f ", V[i][j]);
+        write_vtkFile(outputLocation, n, xlength, ylength, imax-1, jmax-1, dx, dy, U+1, V+1, P+1);
     }
-    printf("]\n");
-  }
-  printf("\n  P Contains:\n---------------\n");
-  for (int i = 0; i < imax; i++)
-  {
-    printf("[");
-    for (int j = 0; j < jmax; j++)
-    {
-        printf(" %f ", P[i][j]);
-    }
-    printf("]\n");
-  }
 }
 
 /**
@@ -156,7 +136,8 @@ void output_uvp(double **U, double **V, double **P, int imax, int jmax)
 int main(int argn, char** args){
   char *inputFile; // file name to read configuration parameters from
   char *outputLocation; // where to store the results
-  int outputAllSteps = 0; // if nonzero, we will generate VTKs for ALL timesteps, not jsut the last one
+  int outputAllSteps  = 0; // if nonzero, we will generate VTKs for ALL timesteps, not jsut the last one
+  int outputBoundary = 0; // if non, we will include the boundary layer in our output
 
   // initial parameters given by inputFile
   double Re;
@@ -191,7 +172,7 @@ int main(int argn, char** args){
   // current time
   double t = 0.0;
 
-  if (!parseCommandLine(argn, args, &inputFile, &outputLocation, &outputAllSteps))
+  if (!parseCommandLine(argn, args, &inputFile, &outputLocation, &outputAllSteps, &outputBoundary))
   {
     return -1; // exit if no arguments were given
   }
@@ -240,7 +221,7 @@ int main(int argn, char** args){
     // ------------------------------------------------- //
     if (outputAllSteps)
     {
-        write_vtkFile(outputLocation, n, xlength, ylength, imax, jmax, dx, dy, U, V, P);
+        output_uvp(outputLocation, n, xlength, ylength, imax, jmax, dx, dy, U, V, P, outputBoundary);
     }
 
     t += dt;
@@ -251,7 +232,7 @@ int main(int argn, char** args){
   // ----------------------- //
   /* output final U,V,P here */
   // ----------------------- //
-  write_vtkFile(outputLocation, n, xlength, ylength, imax, jmax, dx, dy, U, V, P);
+  output_uvp(outputLocation, n, xlength, ylength, imax, jmax, dx, dy, U, V, P, outputBoundary);
 
   // free memory
   free_matrix(U, 0, imax+1, 0, jmax+1);
