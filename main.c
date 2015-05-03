@@ -10,7 +10,7 @@
 
 int parseCommandLine(int argn, char** args, char** inputFile, char** outputLocation, int* outputAllFrames, int* outputBoundary)
 {
-    char* usage = "-f inputFile [-o outputDir] [-a]\n     -a will cause a .vtk file to be produced for every timestep\n     If no output directory is specified, the current directory will be used by default";
+    char* usage = "-f inputFile [-o outputDir] [-b] [-a]\n     -a will cause a .vtk file to be produced for every timestep\n     -b will include boundary values in the output .vtk files\n     If no output directory is specified, the current directory will be used by default";
     char* outputDir;
     int opt;
     int setOutput = 0;
